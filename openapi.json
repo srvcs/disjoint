@@ -1,0 +1,132 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "srvcs-disjoint",
+    "description": "",
+    "license": {
+      "name": "Apache-2.0",
+      "identifier": "Apache-2.0"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [],
+        "summary": "`GET /` — service identity (srvcs service standard).",
+        "operationId": "index",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [],
+        "summary": "`POST /` — are the two sets disjoint (do they share no elements)?",
+        "description": "This service does no set logic of its own. It asks `srvcs-intersection` for\nthe intersection of `a` and `b`, then reports whether that intersection is\nempty. If intersection rejects an element the `422` is forwarded; if it is\nunreachable this service reports itself degraded rather than guessing.",
+        "operationId": "evaluate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisjointResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "an element is not a valid integer (forwarded from srvcs-intersection)"
+          },
+          "500": {
+            "description": "srvcs-intersection returned an unusable response"
+          },
+          "503": {
+            "description": "the srvcs-intersection dependency is unavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DisjointResponse": {
+        "type": "object",
+        "required": [
+          "a",
+          "b",
+          "result"
+        ],
+        "properties": {
+          "a": {
+            "type": "object"
+          },
+          "b": {
+            "type": "object"
+          },
+          "result": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EvalRequest": {
+        "type": "object",
+        "required": [
+          "a",
+          "b"
+        ],
+        "properties": {
+          "a": {
+            "type": "object",
+            "description": "The first set, as a list of integers. Validation of the elements is\ndelegated to `srvcs-intersection`."
+          },
+          "b": {
+            "type": "object",
+            "description": "The second set, as a list of integers. Validation of the elements is\ndelegated to `srvcs-intersection`."
+          }
+        }
+      },
+      "Info": {
+        "type": "object",
+        "required": [
+          "service",
+          "concern",
+          "depends_on"
+        ],
+        "properties": {
+          "concern": {
+            "type": "string"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "service": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
